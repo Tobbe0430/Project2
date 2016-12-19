@@ -104,7 +104,7 @@ assign	sram_dirty 		  = sram_cache_tag[22];
 assign	sram_tag  		  = sram_cache_tag[21:0];
 assign	cache_sram_index  = p1_index;
 assign	cache_sram_enable = p1_req;
-assign	cache_sram_write  = cache_we | write_hit;
+assign	cache_sram_write  = cache_we | write_hit; 		//TODO: WHERE IS WRITE HIT SET TO 1?
 assign	cache_sram_tag    = {1'b1, cache_dirty, p1_tag};	
 assign	cache_sram_data   = (hit) ? w_hit_data : mem_data_i;
 
@@ -125,6 +125,7 @@ assign r_hit_data 	 = (hit)? sram_cache_data : 256'b0; // Maybe we don't need an
 // read data :  256-bit to 32-bit
 always@(p1_offset or r_hit_data) begin
 	//!!! add you code here! (p1_data=...?)
+	if (hit)									//wtf is this right?!
 	case (p1_offset[5:3])
 		3'd0: p1_data <= r_hit_data[31:0];
 		3'd1: p1_data <= r_hit_data[63:32];
@@ -135,12 +136,16 @@ always@(p1_offset or r_hit_data) begin
 		3'd6: p1_data <= r_hit_data[223:192];
 		3'd7: p1_data <= r_hit_data[255:224];
 	endcase	
+	else 
+		begin									//What if it's not a hit?
+		end
 end
 
 
 // write data :  32-bit to 256-bit
 always@(p1_offset or r_hit_data or p1_data_i) begin
 	//!!! add you code here! (w_hit_data=...?)case (p1_offset[5:3])
+	if (hit)
 		case (p1_offset[5:3])
 		3'd0: 
 			begin
@@ -188,7 +193,10 @@ always@(p1_offset or r_hit_data or p1_data_i) begin
 			w_hit_data[223:0] <= sram_cache_data[223:0];
 			w_hit_data[255:224] <= p1_data_i;
 			end
-	endcase
+		endcase
+	else 
+		begin
+		end
 end
 
 
@@ -213,30 +221,47 @@ always@(posedge clk_i or negedge rst_i) begin
 			end
 			STATE_MISS: begin
 				if(sram_dirty) begin		//write back if dirty
+					//We want what is currently in this block to write to memory
+					//before we load the block we want. So, send dirty shit to memory
 	                //!!! add you code here! 
+					p1_stall_o = 1'b1;		//We start to stall.
+					write_back = 1'b1;
+					mem_enable_o = 1'b1;
+					mem_write_o = 1'b1;
 					state <= STATE_WRITEBACK;
 				end
 				else begin					//write allocate: write miss = read miss + write hit; read miss = read miss + read hit
 	                //!!! add you code here! 
+					p1_stall_o = 1'b1;		//We start to stall.
 					state <= STATE_READMISS;
 				end
 			end
 			STATE_READMISS: begin
 				if(mem_ack_i) begin			//wait for data memory acknowledge
-	                //!!! add you code here! 
-					state <= STATE_READMISSOK;
+					//We have gotten the correct block from memory 
+	                //!!! add you code here!
+					cache_we = 1'b1;		//We write the block inte the cache.
+					mem_enable_o = 1'b0;			
+					state <= STATE_READMISSOK;	/// WE ARE HERE; ARE WE DONE HERE OR NOT!?
 				end
 				else begin
 					state <= STATE_READMISS;
 				end
 			end
-			STATE_READMISSOK: begin			//wait for data memory acknowledge
+			STATE_READMISSOK: begin			//wait for data memory acknowledge -- No we are not!? //Calle
 	                //!!! add you code here! 
+					
+					p1_stall_o = 1'b0;		//We stop stalling (rigth place?).
 				state <= STATE_IDLE;
 			end
 			STATE_WRITEBACK: begin
 				if(mem_ack_i) begin			//wait for data memory acknowledge
+				//Now the previous data is saved in the memory and it's fine to change the block's value.
+				//Load the correct block from memory into the cache.
 	                //!!! add you code here! 
+					write_back = 1'b0;
+					mem_enable_o = 1'b1;
+					mem_write_o = 1'b0;
 					state <= STATE_READMISS;
 				end
 				else begin

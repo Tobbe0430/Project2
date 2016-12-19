@@ -99,9 +99,9 @@ assign	p1_stall_o = ~hit & p1_req;
 assign	p1_data_o  = p1_data; 
 
 // SRAM interface
-assign	sram_valid = sram_cache_tag[23];
-assign	sram_dirty = sram_cache_tag[22];
-assign	sram_tag   = sram_cache_tag[21:0];
+assign	sram_valid		  = sram_cache_tag[23];
+assign	sram_dirty 		  = sram_cache_tag[22];
+assign	sram_tag  		  = sram_cache_tag[21:0];
 assign	cache_sram_index  = p1_index;
 assign	cache_sram_enable = p1_req;
 assign	cache_sram_write  = cache_we | write_hit;
@@ -119,8 +119,8 @@ assign	cache_dirty  = write_hit;
 
 // tag comparator
 //!!! add you code here!  (hit=...?,  r_hit_data=...?)
-assign hit 			 = (// I think we wanna use sram_tag == p1_tag)? 1'b1: 1'b0; 
-assign r_hit_data 	 = (// Something)? 
+assign hit 			 = (sram_tag == p1_tag)? 1'b1: 1'b0; // Is this ok?
+assign r_hit_data 	 = (hit)? sram_cache_data : 256'b0; // Maybe we don't need an if-case? 
 
 // read data :  256-bit to 32-bit
 always@(p1_offset or r_hit_data) begin

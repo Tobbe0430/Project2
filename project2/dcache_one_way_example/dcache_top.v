@@ -34,7 +34,7 @@ input	[256-1:0]	 	mem_data_i;
 input			      	mem_ack_i; 
 	
 output	[256-1:0]		mem_data_o; 
-output	[32-1:0]		mem_addr_o; 	
+output	[32-1:0]		mem_addr_o; 
 output				    mem_enable_o; 
 output				    mem_write_o; 
 	
@@ -52,18 +52,18 @@ output				  	p1_stall_o;
 //
 // to SRAM interface
 //
-wire	[4:0]		  	cache_sram_index;
-wire				    cache_sram_enable;
-wire	[23:0]			cache_sram_tag;
-wire	[255:0]			cache_sram_data;
-wire				    cache_sram_write;
+wire	[4:0]		  	cache_sram_index;	//
+wire				    cache_sram_enable;	//
+wire	[23:0]			cache_sram_tag;		//
+wire	[255:0]			cache_sram_data;	//
+wire				    cache_sram_write;	//
 wire	[23:0]			sram_cache_tag;
 wire	[255:0]			sram_cache_data;
 
 
 // cache
-wire					sram_valid;
-wire					sram_dirty;
+wire					sram_valid;	//
+wire					sram_dirty;	//
 
 // controller
 parameter 			STATE_IDLE			= 3'h0,
@@ -75,19 +75,19 @@ reg		[2:0]		state;
 reg					mem_enable;
 reg					mem_write;
 reg					cache_we;
-wire				cache_dirty;
+wire				cache_dirty;	//
 reg					write_back;
 
 // regs & wires
-wire	[4:0]		  p1_offset;
-wire	[4:0]		  p1_index;
-wire	[21:0]		p1_tag;
+wire	[4:0]		p1_offset;	//
+wire	[4:0]		p1_index;	//
+wire	[21:0]		p1_tag;		//
 wire	[255:0]		r_hit_data;
-wire	[21:0]		sram_tag;
-wire				    hit;
+wire	[21:0]		sram_tag;	//
+wire				hit;
 reg		[255:0]		w_hit_data;
-wire				    write_hit;
-wire				    p1_req;
+wire				write_hit;	//
+wire				p1_req;		//
 reg		[31:0]		p1_data;
 
 // project1 interface

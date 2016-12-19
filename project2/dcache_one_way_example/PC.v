@@ -14,7 +14,7 @@ input				   clk_i;
 input				   rst_i;
 input				   start_i;
 input				   stall_i;
-input          pcEnable_i;
+input          pcEnable_i;			//flush
 input	 [31:0]		pc_i;
 output	[31:0]		pc_o;
 

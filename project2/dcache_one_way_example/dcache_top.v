@@ -126,21 +126,69 @@ assign r_hit_data 	 = (hit)? sram_cache_data : 256'b0; // Maybe we don't need an
 always@(p1_offset or r_hit_data) begin
 	//!!! add you code here! (p1_data=...?)
 	case (p1_offset[5:3])
-		3'd0: p1_data = r_hit_data[31:0];
-		3'd1: p1_data = r_hit_data[63:32];
-		3'd2: p1_data = r_hit_data[95:64];  
-		3'd3: p1_data = r_hit_data[127:96];
-		3'd4: p1_data = r_hit_data[159:128];
-		3'd5: p1_data = r_hit_data[191:160];
-		3'd6: p1_data = r_hit_data[223:192];
-		3'd7: p1_data = r_hit_data[255:224];
+		3'd0: p1_data <= r_hit_data[31:0];
+		3'd1: p1_data <= r_hit_data[63:32];
+		3'd2: p1_data <= r_hit_data[95:64];  
+		3'd3: p1_data <= r_hit_data[127:96];
+		3'd4: p1_data <= r_hit_data[159:128];
+		3'd5: p1_data <= r_hit_data[191:160];
+		3'd6: p1_data <= r_hit_data[223:192];
+		3'd7: p1_data <= r_hit_data[255:224];
 	endcase	
 end
 
 
 // write data :  32-bit to 256-bit
 always@(p1_offset or r_hit_data or p1_data_i) begin
-	//!!! add you code here! (w_hit_data=...?)
+	//!!! add you code here! (w_hit_data=...?)case (p1_offset[5:3])
+		case (p1_offset[5:3])
+		3'd0: 
+			begin
+			w_hit_data[31:0] 	<= p1_data_i;
+			w_hit_data[255:32] 	<= sram_cache_data[255:32]
+			end
+		3'd1: w_hit_data[63:32] <= p1_data_i;
+			begin
+			w_hit_data[31:0] <= sram_cache_data[31:0];
+			w_hit_data[63:32] <= p1_data_i;
+			w_hit_data[255:64] <= sram_cache_data[255:64];
+			end
+		3'd2:
+			begin
+			w_hit_data[63:0] <= sram_cache_data[63:0];
+			w_hit_data[95:64] <= p1_data_i; 
+			w_hit_data[255:96] <= sram_cache_data[255:96];
+			end
+		3'd3: 
+			begin
+			w_hit_data[95:0] <= sram_cache_data[95:0];
+			w_hit_data[127:96]  <= p1_data_i;
+			w_hit_data[255:128] <= sram_cache_data[255:128];
+			end
+		3'd4: 
+			begin
+			w_hit_data[127:0] <= sram_cache_data[127:0];
+			w_hit_data[159:128] <= p1_data_i;
+			w_hit_data[255:160] <= sram_cache_data[255:160];
+			end
+		3'd5: 
+			begin
+			w_hit_data[159:0] <= sram_cache_data[159:0];
+			w_hit_data[191:160] <= p1_data_i;
+			w_hit_data[255:192] <= sram_cache_data[255:192];
+			end
+		3'd6: 
+			begin
+			w_hit_data[191:0] <= sram_cache_data[191:0];
+			w_hit_data[223:192] <= p1_data_i;
+			w_hit_data[255:224] <= sram_cache_data[255:224];
+			end	
+		3'd7: 
+			begin
+			w_hit_data[223:0] <= sram_cache_data[223:0];
+			w_hit_data[255:224] <= p1_data_i;
+			end
+	endcase
 end
 
 

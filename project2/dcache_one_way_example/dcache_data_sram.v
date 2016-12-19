@@ -9,11 +9,11 @@ module dcache_data_sram
 );
 
 // Interface
-input				  clk_i;
+input				clk_i;
 input	[4:0]		addr_i;
-input	[255:0]	data_i;
-input				  enable_i;
-input				  write_i;
+input	[255:0]		data_i;
+input				enable_i;
+input				write_i;
 
 output	[255:0] 	data_o;
 

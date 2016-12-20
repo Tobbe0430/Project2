@@ -1,5 +1,6 @@
 module ID_EX
-(
+(	
+	memstall_i,
 	clk_i,
 	wb_i,
 	mem_i,
@@ -28,6 +29,7 @@ module ID_EX
 	rdaddr_o
 );
 
+input			memstall_i;
 input 			clk_i;
 input	[1:0]	wb_i;
 input	[1:0]	mem_i;
@@ -65,18 +67,31 @@ assign rtaddr2_o = rtaddr;
 assign rtaddr3_o = rtaddr;
 assign rdaddr_o = rdaddr;
 
+reg 	ini;
+initial begin
+	ini = 1;
+end
 
-always@(negedge clk_i) begin
-        wb <= wb_i;
-		mem <= mem_i;
-		ex <= ex_i;
-		inst_addr <= inst_addr_i;
-		rsdata <= rsdata_i;
-		rtdata <= rtdata_i;
-		imm <= imm_i;
-		rsaddr <= rsaddr_i;
-		rtaddr <= rtaddr_i;
-		rdaddr <= rdaddr_i;
+
+always@(posedge clk_i) begin
+	if	(memstall_i | ini)
+		begin
+		ini <= 0;
+		end
+	else 
+		begin
+			wb <= wb_i;
+			mem <= mem_i;
+			ex <= ex_i;
+			inst_addr <= inst_addr_i;
+			rsdata <= rsdata_i;
+			rtdata <= rtdata_i;
+			imm <= imm_i;
+			rsaddr <= rsaddr_i;
+			rtaddr <= rtaddr_i;
+			rdaddr <= rdaddr_i;
+		end
+		
 end
 
 endmodule

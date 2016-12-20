@@ -37,8 +37,8 @@ PC PC
 	.clk_i			(clk_i),
 	.rst_i			(rst_i),
 	.start_i		(start_i),
-	.stall_i		(HD.pc_o),					//1  bit
-	.pcEnable_i		(),					//FROM MEMSTALL!!!!!!!!!!
+	.stall_i		(dcache.p1_stall5_o),					//1  bit
+	.pcEnable_i		(HD.pc_o),					//FROM MEMSTALL!!!!!!!!!!
 	.pc_i			(MUX2.data_o),				//32 bits, instr. addr. from MUX2
 	.pc1_o			(Add_PC.data1_i),			//32 bits, instruction address
 	.pc2_o			(Instruction_Memory.addr_i)	//32 bits, instruction address
@@ -78,12 +78,16 @@ dcache_top dcache
 	.mem_write_o	(mem_write_o), 
 	
 	// to CPU interface	
-	.p1_data_i		(), 
-	.p1_addr_i		(), 	
-	.p1_MemRead_i	(), 
-	.p1_MemWrite_i	(), 
-	.p1_data_o		(), 
-	.p1_stall_o		()
+	.p1_data_i		(EX_MEM.rtdata_o), 
+	.p1_addr_i		(EX_MEM.result1_o), 	
+	.p1_MemRead_i	(EX_MEM.mem1_o), 
+	.p1_MemWrite_i	(EX_MEM.mem2_o), 
+	.p1_data_o		(MEM_WB.memdata_i), 
+	.p1_stall_o		(IF_ID.memstall_i),
+	.p1_stall2_o	(ID_EX.memstall_i),
+	.p1_stall3_o	(EX_MEM.memstall_i),
+	.p1_stall4_o	(MEM_WB.memstall_i),
+	.p1_stall5_o	(PC.stall_i)
 );
 
 Flush Flush(
@@ -116,7 +120,7 @@ Adder Add_PC(
 );
 
 IF_ID IF_ID(
-	.memstall_i 	(),
+	.memstall_i 	(dcache.p1_stall_o),		//1  bit, memstall or not
 	.clk_i		 	(clk_i),
 	.inst_addr_i 	(Add_PC.data2_o),			//32 bits, instruction address
 	.inst_i		 	(Instruction_Memory.inst_o),//32 bits, the whole instruction
@@ -150,7 +154,7 @@ HD HD(
 	.id_ex_i	 	(ID_EX.rtaddr3_o),			//5  bits, rd address
 	.id_ex_memread_i(ID_EX.mem2_o),				//1  bits, mem control signal
 	.mux8_o		 	(MUX8.hd_i),				//1  bit, hazard or no hazard
-	.pc_o		 	(PC.stall_i),				//1  bit, hazard or no hazard
+	.pc_o		 	(PC.pcEnable_i),				//1  bit, hazard or no hazard
 	.if_id_o 	 	(IF_ID.hd_i)				//1  bit, hazard or no hazard
 );
 
@@ -183,7 +187,7 @@ Sign_Extend Sign_Extend(
 );
 
 ID_EX ID_EX(
-	.memstall_i 	(),
+	.memstall_i 	(dcache.p1_stall2_o),		//1  bit, memstall or not
 	.clk_i		 	(clk_i),
 	.wb_i	 	 	(MUX8.wb_o),				//2  bits, control input
 	.mem_i	    	(MUX8.mem_o),				//2  bits, control input
@@ -269,7 +273,7 @@ FU FU(
 );
 
 EX_MEM EX_MEM(
-	.memstall_i 	(),
+	.memstall_i 	(dcache.p1_stall3_o),		//1  bit, memstall or not
 	.clk_i		 	(clk_i),
 	.wb_i		 	(ID_EX.wb_o),				//2  bits, control input
 	.mem_i		 	(ID_EX.mem1_o),				//2  bits, control input
@@ -278,22 +282,22 @@ EX_MEM EX_MEM(
 	.writeaddr_i 	(MUX3.data_o),				//5  bits, write address
 	.wb1_o		 	(FU.wb1_i),					//2  bits, control input
 	.wb2_o		 	(MEM_WB.wb_i),				//2  bits, control input
-	.mem1_o		 	(Data_Memory.memread_i),	//1  bit, control input
-	.mem2_o		 	(Data_Memory.memwrite_i),	//1  bit, control input
-	.result1_o	 	(Data_Memory.memaddr_i),  	//32 bits, ALU result
+	.mem1_o		 	(dcache.p1_MemRead_i),		//1  bit, control input
+	.mem2_o		 	(dcache.p1_MemWrite_i),		//1  bit, control input
+	.result1_o	 	(dcache.p1_addr_i),  		//32 bits, ALU result
 	.result2_o	 	(MEM_WB.aluresult_i),		//32 bits, ALU result
 	.result3_o	 	(MUX7.data3_i),				//32 bits, ALU result from previous stage
 	.result4_o   	(MUX6.data3_i),				//32 bits, ALU result from previous stage
-	.rtdata_o	 	(Data_Memory.writedata_i),	//32 bits, rt data for mem.write
+	.rtdata_o	 	(dcache.p1_data_i),			//32 bits, rt data for mem.write
 	.writeaddr1_o	(FU.writeaddr1_i),			//5  bits, write address
 	.writeaddr2_o 	(MEM_WB.writeaddr_i)		//5  bits, write address
 );
 
 MEM_WB MEM_WB(
-	.memstall_i 	(),
+	.memstall_i 	(dcache.p1_stall4_o),		//1  bit, memstall or not
 	.clk_i		 	(clk_i),
 	.wb_i		 	(EX_MEM.wb2_o),				//2  bits, control input
-	.memdata_i   	(Data_Memory.memdata_o),	//32 bits, rt data read from memory
+	.memdata_i   	(dcache.p1_data_o),			//32 bits, rt data read from memory
 	.aluresult_i 	(EX_MEM.result2_o),			//32 bits, ALU result
 	.writeaddr_i	(EX_MEM.writeaddr2_o),		//5  bits, write address
 	.wb1_o		 	(Registers.regwrite_i),		//1  bit, control input (regwrite)

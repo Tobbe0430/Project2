@@ -1,5 +1,6 @@
 module EX_MEM
 (
+	memstall_i,
 	clk_i,
 	wb_i,
 	mem_i,
@@ -19,6 +20,7 @@ module EX_MEM
 	writeaddr2_o
 );
 
+input			memstall_i;
 input			clk_i;
 input	[1:0]	wb_i;
 input	[1:0]	mem_i;
@@ -46,12 +48,25 @@ assign rtdata_o = rtdata;
 assign writeaddr1_o = writeaddr;
 assign writeaddr2_o = writeaddr;
 
-always@(negedge clk_i) begin
-	wb <= wb_i;
-	mem <= mem_i;
-	result <= result_i;
-	rtdata <= rtdata_i;
-	writeaddr <= writeaddr_i;
+reg ini;
+initial begin
+	ini = 1;
+end
+
+always@(posedge clk_i) begin
+	if (memstall_i | ini)
+		begin
+			ini <= 0;
+		end
+	else
+		begin
+			wb <= wb_i;
+			mem <= mem_i;
+			result <= result_i;
+			rtdata <= rtdata_i;
+			writeaddr <= writeaddr_i;
+		end
+
 end
 
 endmodule

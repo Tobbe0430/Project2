@@ -1,5 +1,6 @@
 module MEM_WB
 (
+	memstall_i,
 	clk_i,
 	wb_i,
 	memdata_i,
@@ -14,6 +15,7 @@ module MEM_WB
 	writeaddr2_o
 );
 
+input			memstall_i;
 input 			clk_i;
 input	[1:0]	wb_i;
 input	[31:0]	memdata_i,aluresult_i;
@@ -34,12 +36,25 @@ assign aluresult_o = aluresult;
 assign writeaddr1_o = writeaddr;
 assign writeaddr2_o = writeaddr;
 
+reg 	ini;
+initial begin
+	ini = 1;
+end
 
-always@(negedge clk_i) begin
-        wb <= wb_i;
-		memdata <= memdata_i;
-		aluresult <= aluresult_i;
-		writeaddr <= writeaddr_i; 
+
+always@(posedge clk_i) begin
+	if (memstall_i | ini)
+		begin
+			ini <= 0;
+		end
+	else
+		begin
+			wb <= wb_i;
+			memdata <= memdata_i;
+			aluresult <= aluresult_i;
+			writeaddr <= writeaddr_i; 
+		end
+	
 end
 
 endmodule 

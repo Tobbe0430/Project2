@@ -107,7 +107,7 @@ always@(posedge Clk) begin
 		
 	$fdisplay(outfile, "cycle = %d, Start = %b", counter, Start);
 	// print PC 
-	$fdisplay(outfile, "PC = %d", CPU.PC.pc_o);
+	$fdisplay(outfile, "PC = %d", CPU.PC.pc1_o);
 	
 	// print Registers
 	$fdisplay(outfile, "Registers");

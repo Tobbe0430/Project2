@@ -1,5 +1,6 @@
 module IF_ID 	
 (
+	memstall_i,
 	clk_i,
 	inst_addr_i,
 	inst_i,
@@ -19,6 +20,7 @@ module IF_ID
 	rd_o
 );
 
+input 			memstall_i;
 input 			clk_i;
 input	[31:0]	inst_addr_i,inst_i;
 input			hd_i,flush_i;
@@ -45,8 +47,8 @@ assign sign16_o = inst[15:0];
 assign rd_o = inst[15:11];
 
 
-always@(negedge clk_i) begin
-    if(hd_i == 1)	
+always@(posedge clk_i) begin
+    if(hd_i | memstall_i)	
 		begin	
 		end
 	else if (flush_i == 1)

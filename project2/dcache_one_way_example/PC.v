@@ -6,7 +6,7 @@ module PC
 	stall_i,
 	pcEnable_i,
 	pc_i,
-	pc1_o,
+	pc1_o,	
 	pc2_o
 );
 
@@ -20,6 +20,7 @@ input	 [31:0]		pc_i;
 output	[31:0]		pc1_o;
 output  [31:0]		pc2_o;
 
+
 // Signals
 reg		[31:0]		pc_o;
 
@@ -31,10 +32,10 @@ always@(posedge clk_i or negedge rst_i) begin
         pc_o <= 32'b0;
     end
     else begin
-    	if(stall_i) begin
+    	if(stall_i ) begin
     	end
     	else if(start_i)	begin
-    		if( pcEnable_i )
+    		if( ~pcEnable_i )
     			pc_o <= pc_i;
     	end
     	else
